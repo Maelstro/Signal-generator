@@ -31,7 +31,6 @@ class SigGen(tk.Tk):
         self.line1, = fig_subplot.plot(0, 0, 'r-')
         self.canvas = matplotlib.backends.backend_tkagg.FigureCanvasTkAgg(fig, master=frame)
         self.plot_widget = self.canvas.get_tk_widget()
-
         tk.Grid.columnconfigure(frame, 1, weight=1)
         tk.Grid.rowconfigure(frame, 0, weight=1)
         self.plot_widget.grid(row=0, column=1, rowspan=2, sticky="nsew")
@@ -56,7 +55,7 @@ class SigGen(tk.Tk):
         samp = tk.Entry(parameter_frame)
         samp.grid(row=0, column=1, sticky='e')
         #Signal selector
-        # TODO: Add more functionalities
+        #TODO Add more functionalities
         # + add 'Write to file option
         if value == "Sine wave":
             global amp, freq
@@ -94,7 +93,7 @@ class SigGen(tk.Tk):
             button.grid(row=3, columnspan=2)
             self.update()
             self.update()
-        # TODO: Mixed signal generation
+            #   TODO: Mixed signal generation
     def refreshFig(self,x,y):
         self.line1.set_data(x,y)
         ax = self.canvas.figure.axes[0]
