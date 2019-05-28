@@ -35,7 +35,7 @@ class SigGen(tk.Tk):
         tk.Grid.columnconfigure(frame, 1, weight=1)
         tk.Grid.rowconfigure(frame, 0, weight=1)
         self.plot_widget.grid(row=0, column=1, rowspan=2, sticky="nsew")
-        for item in ["Sine wave", "White noise"]:
+        for item in ["Sine wave", "White noise", "Constant"]:
             lb.insert(tk.END, item)
         #Define widget for data insertion
         global parameter_frame
@@ -56,6 +56,8 @@ class SigGen(tk.Tk):
         samp = tk.Entry(parameter_frame)
         samp.grid(row=0, column=1, sticky='e')
         #Signal selector
+        # TODO: Add more functionalities
+        # + add 'Write to file option
         if value == "Sine wave":
             global amp, freq
             amp_label = tk.Label(parameter_frame, text="Amplitude")
@@ -66,12 +68,10 @@ class SigGen(tk.Tk):
             freq_label.grid(row=2, column=0, sticky='w')
             freq = tk.Entry(parameter_frame)
             freq.grid(row=2, column=1, sticky='e')
-
             button = tk.Button(parameter_frame, text='Calculate', command=lambda: self.getParameter("Sine"))
             button.grid(row=3, columnspan=2)
             self.update()
-            #TODO:
-        if value == "White noise":
+        elif value == "White noise":
             global mean, std
             mean_label = tk.Label(parameter_frame, text="Mean")
             mean_label.grid(row=1, column=0, sticky='w')
@@ -84,7 +84,17 @@ class SigGen(tk.Tk):
             button = tk.Button(parameter_frame, text='Calculate', command=lambda: self.getParameter("White Noise"))
             button.grid(row=3, columnspan=2)
             self.update()
-
+        elif value == "Constant":
+            global constant
+            const_label = tk.Label(parameter_frame, text="Constant value")
+            const_label.grid(row=1, column=0, sticky='w')
+            constant = tk.Entry(parameter_frame)
+            constant.grid(row=1, column=1, sticky='e')
+            button = tk.Button(parameter_frame, text='Calculate', command=lambda: self.getParameter("Constant"))
+            button.grid(row=3, columnspan=2)
+            self.update()
+            self.update()
+        # TODO: Mixed signal generation
     def refreshFig(self,x,y):
         self.line1.set_data(x,y)
         ax = self.canvas.figure.axes[0]
@@ -112,6 +122,13 @@ class SigGen(tk.Tk):
             samples = int(samp.get())
             y = np.random.normal(M, sigma, size=samples)
             smp = np.arange(samples)
+            plt.plot(y)
+            self.refreshFig(smp, y)
+        if funct == "Constant":
+            val = float(constant.get())
+            samples = int(samp.get())
+            smp = np.arange(samples)
+            y = np.full((1, samples), val)
             plt.plot(y)
             self.refreshFig(smp, y)
 
