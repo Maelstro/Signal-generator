@@ -1,30 +1,32 @@
-#Import libraries + set graphical interface of matplotlib
+# Import libraries + set graphical interface of matplotlib
 import numpy as np
 import tkinter as tk
 from tkinter import *
 
 import matplotlib
+
 matplotlib.use("TkAgg")
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
+import os
 
-#Graphical interface
+# Graphical interface
 class SigGen(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         tk.Grid.rowconfigure(self, 0, weight=1)
         tk.Grid.columnconfigure(self, 0, weight=1)
-        #Define frame
+        # Define frame
         frame = tk.Frame(self)
         frame.grid(row=0, column=0, sticky='nsew')
-        #Define listbox
+        # Define listbox
         lb = tk.Listbox(frame)
         tk.Grid.rowconfigure(frame, 0, weight=1)
         tk.Grid.columnconfigure(frame, 0, weight=1)
         lb.grid(row=0, column=0, sticky="nsew")
-        #Define plotting space
+        # Define plotting space
         frame.canvasFig = plt.figure(1)
         fig = matplotlib.figure.Figure(dpi=100)
         fig_subplot = fig.add_subplot(111)
@@ -36,16 +38,18 @@ class SigGen(tk.Tk):
         self.plot_widget.grid(row=0, column=1, rowspan=2, sticky="nsew")
         for item in ["Sine wave", "White noise", "Constant"]:
             lb.insert(tk.END, item)
-        #Define widget for data insertion
+        # Define widget for data insertion
         global parameter_frame
         parameter_frame = tk.Frame(frame)
         parameter_frame.grid(row=1, column=0, sticky='nsew')
         self.update()
-        #Bind functions to buttons/window
+        # Bind functions to buttons/window
         lb.bind("<Double-Button-1>", self.OnDouble)
         self.protocol("WM_DELETE_WINDOW", self.callback)
 
     def OnDouble(self, event):
+        for wid in parameter_frame.winfo_children():
+            wid.destroy()
         widget = event.widget
         selection = widget.curselection()
         value = widget.get(selection[0])
@@ -54,8 +58,8 @@ class SigGen(tk.Tk):
         samp_label.grid(row=0, column=0, sticky='w')
         samp = tk.Entry(parameter_frame)
         samp.grid(row=0, column=1, sticky='e')
-        #Signal selector
-        #TODO Add more functionalities
+        # Signal selector
+        # TODO: Add more functionalities
         # + add 'Write to file option
         if value == "Sine wave":
             global amp, freq
@@ -67,7 +71,7 @@ class SigGen(tk.Tk):
             freq_label.grid(row=2, column=0, sticky='w')
             freq = tk.Entry(parameter_frame)
             freq.grid(row=2, column=1, sticky='e')
-            button = tk.Button(parameter_frame, text='Calculate', command=lambda: self.getParameter("Sine"))
+            button = tk.Button(parameter_frame, text='Calculate & write to file', command=lambda: self.getParameter("Sine"))
             button.grid(row=3, columnspan=2)
             self.update()
         elif value == "White noise":
@@ -80,7 +84,7 @@ class SigGen(tk.Tk):
             std_label.grid(row=2, column=0, sticky='w')
             std = tk.Entry(parameter_frame)
             std.grid(row=2, column=1, sticky='e')
-            button = tk.Button(parameter_frame, text='Calculate', command=lambda: self.getParameter("White Noise"))
+            button = tk.Button(parameter_frame, text='Calculate & write to file', command=lambda: self.getParameter("White Noise"))
             button.grid(row=3, columnspan=2)
             self.update()
         elif value == "Constant":
@@ -89,13 +93,14 @@ class SigGen(tk.Tk):
             const_label.grid(row=1, column=0, sticky='w')
             constant = tk.Entry(parameter_frame)
             constant.grid(row=1, column=1, sticky='e')
-            button = tk.Button(parameter_frame, text='Calculate', command=lambda: self.getParameter("Constant"))
+            button = tk.Button(parameter_frame, text='Calculate & write to file', command=lambda: self.getParameter("Constant"))
             button.grid(row=3, columnspan=2)
             self.update()
             self.update()
-            #   TODO: Mixed signal generation
-    def refreshFig(self,x,y):
-        self.line1.set_data(x,y)
+            # TODO: Mixed signal generation
+
+    def refreshFig(self, x, y):
+        self.line1.set_data(x, y)
         ax = self.canvas.figure.axes[0]
         ax.set_xlim(x.min(), x.max())
         ax.set_ylim(y.min(), y.max())
@@ -112,10 +117,10 @@ class SigGen(tk.Tk):
             f = float(freq.get())
             samples = int(samp.get())
             rng = np.arange(samples)
-            y = A*np.sin(np.pi * f * (rng / samples))
+            y = A * np.sin(2 * np.pi * f * (rng / samples))
             plt.plot(y)
             self.refreshFig(rng, y)
-        if funct == "White Noise":
+        elif funct == "White Noise":
             M = float(mean.get())
             sigma = float(std.get())
             samples = int(samp.get())
@@ -123,18 +128,23 @@ class SigGen(tk.Tk):
             smp = np.arange(samples)
             plt.plot(y)
             self.refreshFig(smp, y)
-        if funct == "Constant":
+        elif funct == "Constant":
             val = float(constant.get())
             samples = int(samp.get())
             smp = np.arange(samples)
             y = np.full((1, samples), val)
             plt.plot(y)
             self.refreshFig(smp, y)
+        i = 0
+        while os.path.exists("/home/maelstro/signals/generated_signal_%s.txt" % i):
+            i += 1
+        #Swap 'maelstro' with your  name if
+        file_name = ("/home/maelstro/signals/generated_signal_%s.txt" % i)
+        np.savetxt(file_name, y, newline='\n')
 
 if __name__ == "__main__":
-    #Graphical main loop
+    # Graphical main loop
     app = SigGen()
     app.title("Signal generator")
     app.geometry("1024x768")
     app.mainloop()
-
