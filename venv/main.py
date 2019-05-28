@@ -2,9 +2,9 @@
 import numpy as np
 import tkinter as tk
 from tkinter import *
+from scipy import signal
 
 import matplotlib
-
 matplotlib.use("TkAgg")
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -36,7 +36,7 @@ class SigGen(tk.Tk):
         tk.Grid.columnconfigure(frame, 1, weight=1)
         tk.Grid.rowconfigure(frame, 0, weight=1)
         self.plot_widget.grid(row=0, column=1, rowspan=2, sticky="nsew")
-        for item in ["Sine wave", "White noise", "Constant"]:
+        for item in ["Sine wave", "White noise", "Constant", "Square wave"]:
             lb.insert(tk.END, item)
         # Define widget for data insertion
         global parameter_frame
@@ -71,7 +71,7 @@ class SigGen(tk.Tk):
             freq_label.grid(row=2, column=0, sticky='w')
             freq = tk.Entry(parameter_frame)
             freq.grid(row=2, column=1, sticky='e')
-            button = tk.Button(parameter_frame, text='Calculate & write to file', command=lambda: self.getParameter("Sine"))
+            button = tk.Button(parameter_frame, text='Generate & write to file', command=lambda: self.getParameter("Sine"))
             button.grid(row=3, columnspan=2)
             self.update()
         elif value == "White noise":
@@ -84,7 +84,7 @@ class SigGen(tk.Tk):
             std_label.grid(row=2, column=0, sticky='w')
             std = tk.Entry(parameter_frame)
             std.grid(row=2, column=1, sticky='e')
-            button = tk.Button(parameter_frame, text='Calculate & write to file', command=lambda: self.getParameter("White Noise"))
+            button = tk.Button(parameter_frame, text='Generate & write to file', command=lambda: self.getParameter("White Noise"))
             button.grid(row=3, columnspan=2)
             self.update()
         elif value == "Constant":
@@ -93,9 +93,21 @@ class SigGen(tk.Tk):
             const_label.grid(row=1, column=0, sticky='w')
             constant = tk.Entry(parameter_frame)
             constant.grid(row=1, column=1, sticky='e')
-            button = tk.Button(parameter_frame, text='Calculate & write to file', command=lambda: self.getParameter("Constant"))
+            button = tk.Button(parameter_frame, text='Generate & write to file', command=lambda: self.getParameter("Constant"))
             button.grid(row=3, columnspan=2)
             self.update()
+        elif value == "Square wave":
+            amp_label = tk.Label(parameter_frame, text="Amplitude")
+            amp_label.grid(row=1, column=0, sticky='w')
+            amp = tk.Entry(parameter_frame)
+            amp.grid(row=1, column=1, sticky='e')
+            freq_label = tk.Label(parameter_frame, text='Frequency')
+            freq_label.grid(row=2, column=0, sticky='w')
+            freq = tk.Entry(parameter_frame)
+            freq.grid(row=2, column=1, sticky='e')
+            button = tk.Button(parameter_frame, text='Generate & write to file',
+                               command=lambda: self.getParameter("Square"))
+            button.grid(row=3, columnspan=2)
             self.update()
             # TODO: Mixed signal generation
 
@@ -103,7 +115,7 @@ class SigGen(tk.Tk):
         self.line1.set_data(x, y)
         ax = self.canvas.figure.axes[0]
         ax.set_xlim(x.min(), x.max())
-        ax.set_ylim(y.min(), y.max())
+        ax.set_ylim(y.min()-1, y.max()+1)
         self.canvas.draw()
 
     def callback(self):
@@ -135,10 +147,18 @@ class SigGen(tk.Tk):
             y = np.full((1, samples), val)
             plt.plot(y)
             self.refreshFig(smp, y)
+        elif funct == "Square":
+            A = float(amp.get())
+            f = float(freq.get())
+            samples = int(samp.get())
+            rng = np.linspace(0, 1, samples, endpoint=False)
+            y = A * signal.square(2 * np.pi * f * rng)
+            plt.plot(rng, y)
+            self.refreshFig(rng, y)
         i = 0
         while os.path.exists("/home/maelstro/signals/generated_signal_%s.txt" % i):
             i += 1
-        #Swap 'maelstro' with your  name if
+        # Swap 'maelstro' with your  name if required
         file_name = ("/home/maelstro/signals/generated_signal_%s.txt" % i)
         np.savetxt(file_name, y, newline='\n')
 
