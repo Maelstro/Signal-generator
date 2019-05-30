@@ -197,7 +197,7 @@ class SigGen(tk.Tk):
             val = float(constant.get())
             samples = int(samp.get())
             smp = np.arange(samples)
-            y = np.full((1, samples), val)
+            y = val*np.heaviside(smp, 1)
             plt.plot(y)
             self.refreshFig(smp, y)
         elif funct == "Square":
