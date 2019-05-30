@@ -36,7 +36,7 @@ class SigGen(tk.Tk):
         tk.Grid.columnconfigure(frame, 1, weight=1)
         tk.Grid.rowconfigure(frame, 0, weight=1)
         self.plot_widget.grid(row=0, column=1, rowspan=2, sticky="nsew")
-        for item in ["Sine wave", "White noise", "Constant", "Square wave"]:
+        for item in ["Sine wave", "White noise", "Constant", "Square wave", "Sine with white noise", "Mixed signal"]:
             lb.insert(tk.END, item)
         # Define widget for data insertion
         global parameter_frame
@@ -59,8 +59,6 @@ class SigGen(tk.Tk):
         samp = tk.Entry(parameter_frame)
         samp.grid(row=0, column=1, sticky='e')
         # Signal selector
-        # TODO: Add more functionalities
-        # + add 'Write to file option
         if value == "Sine wave":
             global amp, freq
             amp_label = tk.Label(parameter_frame, text="Amplitude")
@@ -109,13 +107,68 @@ class SigGen(tk.Tk):
                                command=lambda: self.getParameter("Square"))
             button.grid(row=3, columnspan=2)
             self.update()
-            # TODO: Mixed signal generation
+        elif value == "Sine with white noise":
+            amp_label = tk.Label(parameter_frame, text="Amplitude")
+            amp_label.grid(row=1, column=0, sticky='w')
+            amp = tk.Entry(parameter_frame)
+            amp.grid(row=1, column=1, sticky='e')
+            freq_label = tk.Label(parameter_frame, text='Frequency')
+            freq_label.grid(row=2, column=0, sticky='w')
+            freq = tk.Entry(parameter_frame)
+            freq.grid(row=2, column=1, sticky='e')
+            mean_label = tk.Label(parameter_frame, text="Mean")
+            mean_label.grid(row=3, column=0, sticky='w')
+            mean = tk.Entry(parameter_frame)
+            mean.grid(row=3, column=1, sticky='e')
+            std_label = tk.Label(parameter_frame, text='Standard Deviation')
+            std_label.grid(row=4, column=0, sticky='w')
+            std = tk.Entry(parameter_frame)
+            std.grid(row=4, column=1, sticky='e')
+            button = tk.Button(parameter_frame, text='Generate & write to file',
+                               command=lambda: self.getParameter("Sine with noise"))
+            button.grid(row=5, columnspan=2)
+            self.update()
+        elif value == "Mixed signal":
+            global amp2, freq2
+            amp_label = tk.Label(parameter_frame, text="Amplitude of first sine")
+            amp_label.grid(row=1, column=0, sticky='w')
+            amp = tk.Entry(parameter_frame)
+            amp.grid(row=1, column=1, sticky='e')
+            freq_label = tk.Label(parameter_frame, text='Frequency of first sine')
+            freq_label.grid(row=2, column=0, sticky='w')
+            freq = tk.Entry(parameter_frame)
+            freq.grid(row=2, column=1, sticky='e')
+            amp2_label = tk.Label(parameter_frame, text="Amplitude of second sine")
+            amp2_label.grid(row=3, column=0, sticky='w')
+            amp2 = tk.Entry(parameter_frame)
+            amp2.grid(row=3, column=1, sticky='e')
+            freq2_label = tk.Label(parameter_frame, text='Frequency of second sine')
+            freq2_label.grid(row=4, column=0, sticky='w')
+            freq2 = tk.Entry(parameter_frame)
+            freq2.grid(row=4, column=1, sticky='e')
+            mean_label = tk.Label(parameter_frame, text="Mean")
+            mean_label.grid(row=5, column=0, sticky='w')
+            mean = tk.Entry(parameter_frame)
+            mean.grid(row=5, column=1, sticky='e')
+            std_label = tk.Label(parameter_frame, text='Standard Deviation')
+            std_label.grid(row=6, column=0, sticky='w')
+            std = tk.Entry(parameter_frame)
+            std.grid(row=6, column=1, sticky='e')
+            const_label = tk.Label(parameter_frame, text="Constant value")
+            const_label.grid(row=7, column=0, sticky='w')
+            constant = tk.Entry(parameter_frame)
+            constant.grid(row=7, column=1, sticky='e')
+            button = tk.Button(parameter_frame, text='Generate & write to file',
+                               command=lambda: self.getParameter("Mixed"))
+            button.grid(row=8, columnspan=2)
+            self.update()
 
     def refreshFig(self, x, y):
         self.line1.set_data(x, y)
         ax = self.canvas.figure.axes[0]
         ax.set_xlim(x.min(), x.max())
         ax.set_ylim(y.min()-1, y.max()+1)
+        ax.grid(self)
         self.canvas.draw()
 
     def callback(self):
@@ -154,6 +207,30 @@ class SigGen(tk.Tk):
             rng = np.linspace(0, 1, samples, endpoint=False)
             y = A * signal.square(2 * np.pi * f * rng)
             plt.plot(rng, y)
+            self.refreshFig(rng, y)
+        elif funct == "Sine with noise":
+            A = float(amp.get())
+            f = float(freq.get())
+            samples = int(samp.get())
+            rng = np.arange(samples)
+            M = float(mean.get())
+            sigma = float(std.get())
+            y = A * np.sin(2 * np.pi * f * (rng / samples)) + np.random.normal(M, sigma, size=samples)
+            plt.plot(y)
+            self.refreshFig(rng, y)
+        elif funct == "Mixed":
+            A1 = float(amp.get())
+            f1 = float(freq.get())
+            A2 = float(amp2.get())
+            f2 = float(freq2.get())
+            val = float(constant.get())
+            samples = int(samp.get())
+            rng = np.arange(samples)
+            M = float(mean.get())
+            sigma = float(std.get())
+            y = A1 * np.sin(2 * np.pi * f1 * (rng / samples)) + A2 * np.sin(2 * np.pi * f2 * (rng / samples)) \
+                + np.random.normal(M, sigma, size=samples) + val
+            plt.plot(y)
             self.refreshFig(rng, y)
         i = 0
         while os.path.exists("/home/maelstro/signals/generated_signal_%s.txt" % i):
