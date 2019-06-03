@@ -233,11 +233,17 @@ class SigGen(tk.Tk):
             plt.plot(y)
             self.refreshFig(rng, y)
         i = 0
-        while os.path.exists("/home/maelstro/signals/generated_signal_%s.txt" % i):
-            i += 1
-        # Swap 'maelstro' with your  name if required
-        file_name = ("/home/maelstro/signals/generated_signal_%s.txt" % i)
-        np.savetxt(file_name, y, newline='\n')
+        if sys.platform == "linux":
+            while os.path.exists("/home/maelstro/signals/generated_signal_%s.txt" % i):
+                i += 1
+            # Swap 'maelstro' with your  name if required
+            file_name = ("/home/maelstro/signals/generated_signal_%s.txt" % i)
+            np.savetxt(file_name, y, newline='\n')
+        elif sys.platform == "win32":
+            while os.path.exists("C:\signals\generated_signal_%s.txt" % i):
+                i += 1
+            file_name = ("C:\signals\generated_signal_%s.txt" % i)
+            np.savetxt(file_name, y, newline='\n')
 
 if __name__ == "__main__":
     # Graphical main loop
