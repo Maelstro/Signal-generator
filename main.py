@@ -149,7 +149,7 @@ class SigGen(tk.Tk):
             self.refreshFig(rng, y)
         elif funct == "Sine with noise":
             y = parameters[1] * np.sin(2 * np.pi * parameters[2] * (rng / parameters[0]))\
-                + np.random.normal(parameters[3], parameters[4], size=parameters[0])
+                + np.random.normal(parameters[3], parameters[4], size=samples) + 0.5
             plt.plot(y)
             self.refreshFig(rng, y)
         elif funct == "Mixed":

@@ -46,10 +46,10 @@ class Window(tk.Tk):
         fsHz = len(signal)
         transformed = np.fft.fft(signal, fsHz)/fsHz
         magTransformed = abs(transformed)
-        faxis = np.linspace(-fsHz/2, fsHz/2, fsHz)
+        faxis = np.linspace(0, fsHz/2, fsHz/2)
         finalFFT = np.fft.fftshift(magTransformed)
-        plt.plot(faxis, finalFFT)
-        self.refresh_fig(faxis, finalFFT)
+        plt.plot(faxis, finalFFT[int(fsHz/2):int(fsHz)])
+        self.refresh_fig(faxis, finalFFT[int(fsHz/2):int(fsHz)])
 
     def refresh_fig(self, x, y):
         self.line1.set_data(x, y)
