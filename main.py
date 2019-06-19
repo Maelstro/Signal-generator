@@ -39,7 +39,7 @@ class SigGen(tk.Tk):
         tk.Grid.columnconfigure(frame, 1, weight=1)
         tk.Grid.rowconfigure(frame, 0, weight=1)
         self.plot_widget.grid(row=0, column=1, rowspan=2, sticky="nsew")
-        for item in ["Sine wave", "White noise", "Constant", "Square wave", "Sine with white noise", "Mixed signal"]:
+        for item in ["Sine wave", "White noise", "Constant", "Square wave", "Sine with white noise", "Mixed signal", "Projected signal"]:
             lb.insert(tk.END, item)
         # Define widget for data insertion
         global parameter_frame
@@ -109,6 +109,13 @@ class SigGen(tk.Tk):
                                command=lambda: self.get_parameter("Mixed"))
             button.grid(row=8, columnspan=2)
             self.update()
+        elif value == "Projected signal":
+            self.params.append(self.make_entry(parameter_frame, "Amplitude", 1, 0))
+            self.params.append(self.make_entry(parameter_frame, "Frequency", 2, 0))
+            button = tk.Button(parameter_frame, text='Generate & write to file',
+                               command=lambda: self.get_parameter("Project"))
+            button.grid(row=3, columnspan=2)
+            self.update()
 
     def refreshFig(self, x, y):
         self.line1.set_data(x, y)
@@ -159,6 +166,20 @@ class SigGen(tk.Tk):
                 + np.random.normal(parameters[5], parameters[6], size=samples) + parameters[7]
             plt.plot(y)
             self.refreshFig(rng, y)
+        elif funct == "Project":
+                A = float(parameters[1])
+                fn = float(parameters[2])
+                y = A * np.sin(2 * np.pi * fn * (rng / samples))\
+                    + (A/2) * np.sin(2 * np.pi * 50 * (rng / samples))\
+                    + 0.1*A
+                for i, it in enumerate(y):
+                    if it >= 0:
+                        y[i] = min(it, 0.9 * A)
+                    elif it < 0:
+                        y[i] = max(it, -0.9 * A)
+                y = y + (0.1*A * np.random.random(size=samples))
+                plt.plot(y)
+                self.refreshFig(rng, y)
         i = 0
         if sys.platform == "linux":
             while os.path.exists("/home/maelstro/signals/generated_signal_%s.txt" % i):
