@@ -5,6 +5,7 @@ import scipy as sc
 import tkinter as tk
 import matplotlib.pyplot as plt
 import matplotlib
+import pandas as pd
 matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import os
@@ -50,6 +51,9 @@ class Window(tk.Tk):
         finalFFT = np.fft.fftshift(magTransformed)
         plt.plot(faxis, finalFFT[int(fsHz/2):int(fsHz)])
         self.refresh_fig(faxis, finalFFT[int(fsHz/2):int(fsHz)])
+        data = {'Frequency':faxis, 'FFT Value':finalFFT[int(fsHz/2):int(fsHz)]}
+        df = pd.DataFrame(data)
+        print(df.loc[df['FFT Value'].idxmax()])
 
     def refresh_fig(self, x, y):
         self.line1.set_data(x, y)

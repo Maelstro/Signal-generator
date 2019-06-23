@@ -97,7 +97,6 @@ class SigGen(tk.Tk):
             button.grid(row=5, columnspan=2)
             self.update()
         elif value == "Mixed signal":
-            global amp2, freq2
             self.params.append(self.make_entry(parameter_frame, "Amplitude of first sine", 1, 0))
             self.params.append(self.make_entry(parameter_frame, "Frequency of first sine", 2, 0))
             self.params.append(self.make_entry(parameter_frame, "Amplitude of second sine", 3, 0))
@@ -170,14 +169,13 @@ class SigGen(tk.Tk):
                 A = float(parameters[1])
                 fn = float(parameters[2])
                 y = A * np.sin(2 * np.pi * fn * (rng / samples))\
-                    + (A/2) * np.sin(2 * np.pi * 50 * (rng / samples))\
-                    + 0.1*A
+                    + (A/2) * np.sin(2 * np.pi * 50 * (rng / samples))
                 for i, it in enumerate(y):
                     if it >= 0:
                         y[i] = min(it, 0.9 * A)
                     elif it < 0:
                         y[i] = max(it, -0.9 * A)
-                y = y + (0.1*A * np.random.random(size=samples))
+                y = y + 0.1*A + (0.1*A * np.random.random(size=samples))
                 plt.plot(y)
                 self.refreshFig(rng, y)
         i = 0
